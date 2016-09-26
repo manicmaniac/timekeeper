@@ -215,7 +215,7 @@ def show_contributions(message, user):
         filename = 'contributions.png'
         path = os.path.join(tempdir, filename)
         save_contributions_image(path, user.attendances)
-        message.channel.upload_file(filename, path, 'Here. Regardless of your timezone, each days is plotted in UTC.')
+        message.channel.upload_file(filename, path, 'Here. Regardless of your timezone, each days are plotted in UTC.')
     finally:
         rmtree(tempdir)
 
