@@ -1,4 +1,4 @@
-import os.path
+import os
 
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
 API_TOKEN = os.getenv('SLACK_API_TOKEN')
