@@ -108,7 +108,10 @@ db.create_tables([User, Attendance], safe=True)
 def with_user(func):
     @wraps(func)
     def decorated(message, *args, **kwargs):
-        user_id = message.body['user']
+        user_id = message.body.get('user')
+        if user_id is None:
+            # maybe a bot
+            return
         user, is_created = User.get_or_create(id=user_id)
         if is_created:
             user.save()
