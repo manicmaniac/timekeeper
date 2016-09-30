@@ -32,8 +32,8 @@ matplotlib.use('Agg')  # noqa
 import calmap as cm
 import matplotlib.pyplot as plt
 import pandas as pd
-from peewee import (BooleanField, CharField, CompositeKey, DateField,
-                    DateTimeField, ForeignKeyField, IntegerField, Model)
+from peewee import (BooleanField, CharField, CompositeKey, DateTimeField,
+                    ForeignKeyField, IntegerField, Model)
 from playhouse.db_url import connect
 import pytz
 from slackbot import settings
@@ -111,7 +111,6 @@ class DailyAttendance(Attendance):
     class Meta:
         primary_key = CompositeKey('date', 'user_id')
 
-    date = DateField(null=False)
     break_count = IntegerField(null=False)
     working_time_seconds = IntegerField(null=False)
     user = ForeignKeyField(User, null=False, related_name='daily_attendances',
@@ -120,9 +119,7 @@ class DailyAttendance(Attendance):
     @classmethod
     def create_view(cls, safe=False):
         template = """create view {} dailyattendance as
-                           select date(started_at)
-                               as `date`,
-                                   min(started_at)
+                           select min(started_at)
                                as started_at,
                                    max(finished_at)
                                as finished_at,
@@ -139,8 +136,8 @@ class DailyAttendance(Attendance):
                              from attendance
                             where started_at is not null
                               and finished_at is not null
-                         group by `date`
-                         order by `date`"""
+                         group by date(started_at), user_id
+                         order by started_at"""
         statement = template.format('if not exists' if safe else '')
         cls._meta.database.execute_sql(statement)
 
@@ -248,9 +245,9 @@ def set_timezone(message, user, timezone_id):
         message.reply('OK, I updated your timezone.')
 
 
-@respond_to('timesheet')
+@respond_to('^(show )?(m[ey] )?timesheet$')
 @with_user
-def show_timesheet(message, user):
+def show_timesheet(message, user, *args):
     attendances = user.attendances.order_by(Attendance.started_at)
     if not attendances:
         return message.reply("Sorry but I don't have your timesheet.")
@@ -259,6 +256,20 @@ def show_timesheet(message, user):
     with create_tmp_file(bytes(timesheet, 'utf-8')) as path:
         safe_upload_file(message, filename, path, 'Here is your timesheet.',
                          is_text_file=True)
+
+
+@respond_to('^(show )?(m[ey] )?daily timesheet$')
+@respond_to('^(show )?(m[ey] )?timesheet by day$')
+@with_user
+def show_daily_timesheet(message, user, *args):
+    daily_attendances = user.daily_attendances
+    if not daily_attendances:
+        return message.reply("Sorry but I don't have your daily timesheet.")
+    daily_timesheet = render_daily_timesheet(daily_attendances)
+    filename = 'daily_timesheet.md'
+    with create_tmp_file(bytes(daily_timesheet, 'utf-8')) as path:
+        safe_upload_file(message, filename, path,
+                         'Here is your daily timesheet.', is_text_file=True)
 
 
 @respond_to('contributions')
@@ -322,9 +333,24 @@ def render_timesheet(attendances):
 
 
 def render_timesheet_entry(attendance):
-    return (attendance.started_at_display,
-            attendance.finished_at_display,
-            attendance.working_time_display)
+    a = attendance
+    return (a.started_at_display,
+            a.finished_at_display,
+            a.working_time_display)
+
+
+def render_daily_timesheet(daily_attendances):
+    table = map(render_daily_timesheet_entry, daily_attendances)
+    headers = ['start', 'finish', 'break count', 'working time']
+    return tabulate(table, headers=headers)
+
+
+def render_daily_timesheet_entry(daily_attendance):
+    d = daily_attendance
+    return (d.started_at_display,
+            d.finished_at_display,
+            d.break_count,
+            d.working_time_display)
 
 
 def format_timedelta(timedelta):
@@ -334,7 +360,8 @@ def format_timedelta(timedelta):
 
 
 def working_time_ratio_series(user):
-    statement = """select `date`, working_time_seconds
+    statement = """select date(started_at) as `date`,
+                          working_time_seconds
                      from dailyattendance
                     where user_id = ?"""
     df = pd.read_sql_query(statement, db.get_conn(), index_col='date',
