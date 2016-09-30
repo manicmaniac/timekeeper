@@ -284,9 +284,7 @@ def working_time_ratio_series(user):
                  group by `date`
                  order by `date`;"""
     df = pd.read_sql_query(statement, db.get_conn(), index_col='date', parse_dates=['date'], params=[user.id])
-    df.working_time_seconds -= df.working_time_seconds.min()
-    df.working_time_seconds /= df.working_time_seconds.max()
-    return df.working_time_seconds
+    return df.working_time_seconds / df.working_time_seconds.std()
 
 
 def save_contributions_image(path, user):
