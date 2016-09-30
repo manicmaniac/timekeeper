@@ -123,6 +123,7 @@ def with_user(func):
 @listen_to('(作業を)?再開します')
 @listen_to('start(ed)? working', re.IGNORECASE)
 @listen_to('continued? working', re.IGNORECASE)
+@listen_to('resumed? working', re.IGNORECASE)
 @with_user
 def on_start_working(message, user, *args):
     if not user.trackable:
@@ -139,6 +140,7 @@ def on_start_working(message, user, *args):
 @listen_to('作業を終了します')
 @listen_to('(作業を)?中断します')
 @listen_to('finish(ed)? working', re.IGNORECASE)
+@listen_to('report working', re.IGNORECASE)
 @listen_to('stop(ped)? working', re.IGNORECASE)
 @with_user
 def on_finish_working(message, user, *args):
