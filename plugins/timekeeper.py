@@ -33,14 +33,15 @@ import calmap as cm
 import matplotlib.pyplot as plt
 import pandas as pd
 from peewee import (BooleanField, CharField, DateTimeField, ForeignKeyField,
-                    Model, SqliteDatabase)
+                    Model)
+from playhouse.db_url import connect
 import pytz
 from slackbot import settings
 from slackbot.bot import respond_to, listen_to
 from slackbot.utils import create_tmp_file
 from tabulate import tabulate
 
-db = SqliteDatabase(settings.TIMEKEEPER_DATABASE)
+db = connect(settings.TIMEKEEPER_DATABASE_URI)
 
 
 class BaseModel(Model):
