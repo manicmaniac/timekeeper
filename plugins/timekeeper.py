@@ -19,7 +19,7 @@ I can understand the following words and something like them;
 Again, I won't track you until you say `@timekeeper track me`!
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 import re
 import os
@@ -32,8 +32,8 @@ matplotlib.use('Agg')  # noqa
 import calmap as cm
 import matplotlib.pyplot as plt
 import pandas as pd
-from peewee import (BooleanField, CharField, DateTimeField, ForeignKeyField,
-                    Model)
+from peewee import (BooleanField, CharField, CompositeKey, DateField,
+                    DateTimeField, ForeignKeyField, IntegerField, Model)
 from playhouse.db_url import connect
 import pytz
 from slackbot import settings
@@ -107,8 +107,51 @@ class Attendance(BaseModel):
             return format_timedelta(working_time)
 
 
+class DailyAttendance(Attendance):
+    class Meta:
+        primary_key = CompositeKey('date', 'user_id')
+
+    date = DateField(null=False)
+    break_count = IntegerField(null=False)
+    working_time_seconds = IntegerField(null=False)
+    user = ForeignKeyField(User, null=False, related_name='daily_attendances',
+                           on_delete='CASCADE')
+
+    @classmethod
+    def create_view(cls, safe=False):
+        template = """create view {} dailyattendance as
+                           select date(started_at)
+                               as `date`,
+                                   min(started_at)
+                               as started_at,
+                                   max(finished_at)
+                               as finished_at,
+                                   count(*) - 1
+                               as break_count,
+                                   sum(cast(strftime('%s', finished_at)
+                                            as integer)
+                                       - cast(strftime('%s', started_at)
+                                              as integer))
+                               as working_time_seconds,
+                                  min(created_at)
+                               as created_at,
+                                  user_id
+                             from attendance
+                            where started_at is not null
+                              and finished_at is not null
+                         group by `date`
+                         order by `date`"""
+        statement = template.format('if not exists' if safe else '')
+        cls._meta.database.execute_sql(statement)
+
+    @property
+    def working_time(self):
+        return timedelta(seconds=self.working_time_seconds)
+
+
 db.connect()
 db.create_tables([User, Attendance], safe=True)
+DailyAttendance.create_view(safe=True)
 
 
 def with_user(func):
@@ -291,17 +334,9 @@ def format_timedelta(timedelta):
 
 
 def working_time_ratio_series(user):
-    statement = """select date(started_at)
-                       as `date`,
-                          sum(cast(strftime('%s', finished_at) as integer) -
-                              cast(strftime('%s', started_at) as integer))
-                       as working_time_seconds
-                     from attendance
-                    where started_at is not null
-                      and finished_at is not null
-                      and user_id = ?
-                 group by `date`
-                 order by `date`;"""
+    statement = """select `date`, working_time_seconds
+                     from dailyattendance
+                    where user_id = ?"""
     df = pd.read_sql_query(statement, db.get_conn(), index_col='date',
                            parse_dates=['date'], params=[user.id])
     return df.working_time_seconds / df.working_time_seconds.std()
