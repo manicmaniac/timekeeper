@@ -219,7 +219,7 @@ def show_contributions(message, user):
     try:
         filename = 'contributions.png'
         path = os.path.join(tempdir, filename)
-        save_contributions_image(path, user.attendances)
+        save_contributions_image(path, user)
         safe_upload_file(message, filename, path, 'Here. Regardless of your timezone, each days are plotted in UTC.')
     finally:
         rmtree(tempdir)
@@ -274,29 +274,23 @@ def format_timedelta(timedelta):
     return '{:02}:{:02}:{:02}'.format(hours, minutes, seconds)
 
 
-def working_time_seconds_by_date(attendances):
+def working_time_ratio_series(user):
     statement = """select date(started_at) as `date`,
                           sum(cast(strftime('%s', finished_at) as integer) - cast(strftime('%s', started_at) as integer)) as working_time_seconds
                      from attendance
                     where started_at is not null
                       and finished_at is not null
+                      and user_id = ?
                  group by `date`
                  order by `date`;"""
-    return [dict(date=date, working_time_seconds=working_time_seconds) for date, working_time_seconds in db.execute_sql(statement)]
-
-
-def working_time_ratio_series(attendances):
-    records = working_time_seconds_by_date(attendances)
-    df = pd.DataFrame.from_records(records)
-    df.date = pd.to_datetime(df.date, utc=True)
+    df = pd.read_sql_query(statement, db.get_conn(), index_col='date', parse_dates=['date'], params=[user.id])
     df.working_time_seconds -= df.working_time_seconds.min()
     df.working_time_seconds /= df.working_time_seconds.max()
-    df.index = df.date
     return df.working_time_seconds
 
 
-def save_contributions_image(path, attendances):
-    series = working_time_ratio_series(attendances)
+def save_contributions_image(path, user):
+    series = working_time_ratio_series(user)
     fig = plt.figure(figsize=(8, 2), dpi=72)
     ax = fig.add_axes([0, 0, 1, 1])
     ax = cm.yearplot(series, ax=ax)
