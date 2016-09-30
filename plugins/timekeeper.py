@@ -19,7 +19,7 @@ I can understand the following words and something like them;
 Again, I won't track you until you say `@timekeeper track me`!
 """
 
-import datetime
+from datetime import datetime
 from functools import wraps
 import re
 import os
@@ -27,12 +27,13 @@ from shutil import rmtree
 from tempfile import mkdtemp
 
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # noqa
 
 import calmap as cm
 import matplotlib.pyplot as plt
 import pandas as pd
-from peewee import BooleanField, CharField, DateTimeField, ForeignKeyField, Model, SqliteDatabase
+from peewee import (BooleanField, CharField, DateTimeField, ForeignKeyField,
+                    Model, SqliteDatabase)
 import pytz
 from slackbot import settings
 from slackbot.bot import respond_to, listen_to
@@ -46,12 +47,13 @@ class BaseModel(Model):
     class Meta:
         database = db
 
-    created_at = DateTimeField(default=datetime.datetime.utcnow) # read/write as UTC
+    created_at = DateTimeField(default=datetime.utcnow)  # read/write as UTC
 
 
 class User(BaseModel):
     id = CharField(primary_key=True)
-    timezone_id = CharField(null=False, default=settings.TIMEKEEPER_DEFAULT_TIMEZONE)
+    timezone_id = CharField(null=False,
+                            default=settings.TIMEKEEPER_DEFAULT_TIMEZONE)
     trackable = BooleanField(default=False)
 
     def last_attendance(self):
@@ -67,9 +69,10 @@ class User(BaseModel):
 
 
 class Attendance(BaseModel):
-    started_at = DateTimeField(null=True) # read/write as UTC
-    finished_at = DateTimeField(null=True) # read/write as UTC
-    user = ForeignKeyField(User, null=False, related_name='attendances', on_delete='CASCADE')
+    started_at = DateTimeField(null=True)  # read/write as UTC
+    finished_at = DateTimeField(null=True)  # read/write as UTC
+    user = ForeignKeyField(User, null=False, related_name='attendances',
+                           on_delete='CASCADE')
 
     @property
     def is_complete(self):
@@ -84,14 +87,16 @@ class Attendance(BaseModel):
     def started_at_display(self):
         started_at = self.started_at
         if started_at:
-            local_started_at = pytz.utc.localize(started_at).astimezone(self.user.timezone)
+            utc_started_at = pytz.utc.localize(started_at)
+            local_started_at = utc_started_at.astimezone(self.user.timezone)
             return local_started_at.strftime('%Y-%m-%d %H:%M:%S')
 
     @property
     def finished_at_display(self):
         finished_at = self.finished_at
         if finished_at:
-            local_finished_at = pytz.utc.localize(finished_at).astimezone(self.user.timezone)
+            utc_finished_at = pytz.utc.localize(finished_at)
+            local_finished_at = utc_finished_at.astimezone(self.user.timezone)
             return local_finished_at.strftime('%Y-%m-%d %H:%M:%S')
 
     @property
@@ -129,12 +134,13 @@ def on_start_working(message, user, *args):
     if not user.trackable:
         return
     last_attendance = user.last_attendance()
-    has_unfinished_work = last_attendance and last_attendance.finished_at is None
-    attendance = Attendance.create(started_at=datetime.datetime.utcnow(), user=user)
+    has_unfinished_work = last_attendance and not last_attendance.finished_at
+    attendance = Attendance.create(started_at=datetime.utcnow(), user=user)
     attendance.save()
     message.react('stopwatch')
     if has_unfinished_work:
-        message.reply("I think you missed to inform finishing the last one but I'll record you start your work now.")
+        message.reply("""I think you missed to inform finishing the last one.
+                         However I'll record you start your work now.""")
 
 
 @listen_to('作業を終了します')
@@ -147,14 +153,15 @@ def on_finish_working(message, user, *args):
     if not user.trackable:
         return
     attendance = user.last_attendance()
-    if attendance is None:
+    if not attendance or attendance.finished_at:
         attendance = Attendance.create(user=user)
-    attendance.finished_at = datetime.datetime.utcnow()
+    attendance.finished_at = datetime.utcnow()
     has_unstarted_work = not attendance.started_at and attendance.finished_at
     attendance.save()
     message.react('stopwatch')
     if has_unstarted_work:
-        message.reply("I think you missed to inform starting this work but I'll record you finish your work now.")
+        message.reply("""I think you missed to inform starting this work.
+                         However I'll record you finish your work now.""")
 
 
 @respond_to('^introduce yourself$', re.IGNORECASE)
@@ -206,7 +213,8 @@ def show_timesheet(message, user):
     timesheet = render_timesheet(attendances)
     filename = 'timesheet.md'
     with create_tmp_file(bytes(timesheet, 'utf-8')) as path:
-        safe_upload_file(message, filename, path, 'Here is your timesheet.', is_text_file=True)
+        safe_upload_file(message, filename, path, 'Here is your timesheet.',
+                         is_text_file=True)
 
 
 @respond_to('contributions')
@@ -220,7 +228,12 @@ def show_contributions(message, user):
         filename = 'contributions.png'
         path = os.path.join(tempdir, filename)
         save_contributions_image(path, user)
-        safe_upload_file(message, filename, path, 'Here. Regardless of your timezone, each days are plotted in UTC.')
+        safe_upload_file(
+            message,
+            filename,
+            path,
+            'Here. Regardless of your timezone, each days are plotted in UTC.'
+        )
     finally:
         rmtree(tempdir)
 
@@ -242,7 +255,9 @@ def safe_upload_file(message, filename, path, comment, is_text_file=False):
     if not is_direct_message(channel_id):
         return message.channel.upload_file(filename, path, comment)
     if not is_text_file:
-        return message.reply('Sorry, I cannot upload a file in the private channel.')
+        return message.reply(
+            'Sorry, I cannot upload a file in the private channel.'
+        )
     with open(path) as f:
         text = f.read()
         message.reply(triple_backquoted(text))
@@ -275,15 +290,19 @@ def format_timedelta(timedelta):
 
 
 def working_time_ratio_series(user):
-    statement = """select date(started_at) as `date`,
-                          sum(cast(strftime('%s', finished_at) as integer) - cast(strftime('%s', started_at) as integer)) as working_time_seconds
+    statement = """select date(started_at)
+                       as `date`,
+                          sum(cast(strftime('%s', finished_at) as integer) -
+                              cast(strftime('%s', started_at) as integer))
+                       as working_time_seconds
                      from attendance
                     where started_at is not null
                       and finished_at is not null
                       and user_id = ?
                  group by `date`
                  order by `date`;"""
-    df = pd.read_sql_query(statement, db.get_conn(), index_col='date', parse_dates=['date'], params=[user.id])
+    df = pd.read_sql_query(statement, db.get_conn(), index_col='date',
+                           parse_dates=['date'], params=[user.id])
     return df.working_time_seconds / df.working_time_seconds.std()
 
 
