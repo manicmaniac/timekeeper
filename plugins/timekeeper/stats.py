@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .models import db
+from .database import db
 
 
 def working_time_ratio_series(user):
