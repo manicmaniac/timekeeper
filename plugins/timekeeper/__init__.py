@@ -28,9 +28,10 @@ from slackbot import settings
 from slackbot.bot import respond_to, listen_to
 from slackbot.utils import create_tmp_file
 
+from .database import db
 from .decorators import with_user
 from .helpers import create_temp_dir, safe_upload_file
-from .models import Attendance, DailyAttendance, User, db
+from .models import Attendance, DailyAttendance, User
 from .stats import working_time_ratio_series
 from .views import (render_contribution_figure, render_daily_timesheet,
                     render_timesheet)

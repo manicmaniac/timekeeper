@@ -2,13 +2,11 @@ from datetime import datetime, timedelta
 
 from peewee import (BooleanField, CharField, CompositeKey, DateTimeField,
                     ForeignKeyField, IntegerField, Model)
-from playhouse.db_url import connect
 import pytz
 from slackbot import settings
 
+from .database import db
 from .helpers import format_timedelta
-
-db = connect(settings.TIMEKEEPER_DATABASE_URI)
 
 
 class BaseModel(Model):
