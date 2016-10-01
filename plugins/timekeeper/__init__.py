@@ -22,8 +22,6 @@ Again, I won't track you until you say `@timekeeper track me`!
 from datetime import datetime
 import re
 import os
-from shutil import rmtree
-from tempfile import mkdtemp
 
 import pytz
 from slackbot import settings
@@ -31,7 +29,7 @@ from slackbot.bot import respond_to, listen_to
 from slackbot.utils import create_tmp_file
 
 from .decorators import with_user
-from .helpers import safe_upload_file
+from .helpers import create_temp_dir, safe_upload_file
 from .models import Attendance, DailyAttendance, User, db
 from .stats import working_time_ratio_series
 from .views import (render_contribution_figure, render_daily_timesheet,
@@ -157,10 +155,9 @@ def show_contributions(message, user):
     message.reply('OK, wait a moment...')
     series = working_time_ratio_series(user)
     figure = render_contribution_figure(series)
-    tempdir = mkdtemp()
-    try:
-        filename = 'contributions.png'
-        path = os.path.join(tempdir, filename)
+    filename = 'contributions.png'
+    with create_temp_dir() as temp_dir:
+        path = os.path.join(temp_dir, filename)
         figure.savefig(path)
         safe_upload_file(
             message,
@@ -168,8 +165,6 @@ def show_contributions(message, user):
             path,
             'Here. Regardless of your timezone, each days are plotted in UTC.'
         )
-    finally:
-        rmtree(tempdir)
 
 
 @respond_to('^debug (.*)$')
