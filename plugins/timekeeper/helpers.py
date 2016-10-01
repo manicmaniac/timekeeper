@@ -1,3 +1,17 @@
+from contextlib import contextmanager
+from shutil import rmtree
+from tempfile import mkdtemp
+
+
+@contextmanager
+def create_temp_dir():
+    path = mkdtemp()
+    try:
+        yield path
+    finally:
+        rmtree(path)
+
+
 def format_timedelta(timedelta):
     total_minutes, seconds = divmod(timedelta.seconds, 60)
     hours, minutes = divmod(total_minutes, 60)
