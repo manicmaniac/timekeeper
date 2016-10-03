@@ -7,5 +7,5 @@ ERRORS_TO = os.getenv('TIMEKEEPER_ERRORS_TO')
 TIMEKEEPER_DATABASE_URI = os.getenv('TIMEKEEPER_DATABASE_URI') or 'sqlite:///' + os.path.join(BASE_PATH, 'db.sqlite3')
 TIMEKEEPER_DEFAULT_TIMEZONE = 'Asia/Tokyo'
 PLUGINS = [
-    'plugins.timekeeper'
+    'timekeeper.plugins'
 ]

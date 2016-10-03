@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .database import db
+from timekeeper.database import db
 
 
 def working_time_ratio_series(user):
