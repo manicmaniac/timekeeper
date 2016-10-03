@@ -1,6 +1,6 @@
 from functools import wraps
 
-from .models import User
+from timekeeper.models import User
 
 
 def with_user(func):

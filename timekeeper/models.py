@@ -5,8 +5,8 @@ from peewee import (BooleanField, CharField, CompositeKey, DateTimeField,
 import pytz
 from slackbot import settings
 
-from .database import db
-from .helpers import format_timedelta
+from timekeeper.database import db
+from timekeeper.utils import format_timedelta
 
 
 class BaseModel(Model):

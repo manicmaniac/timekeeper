@@ -28,13 +28,13 @@ from slackbot import settings
 from slackbot.bot import respond_to, listen_to
 from slackbot.utils import create_tmp_file
 
-from .database import db
-from .decorators import with_user
-from .helpers import create_temp_dir, safe_upload_file
-from .models import Attendance, DailyAttendance, User
-from .stats import working_time_ratio_series
-from .views import (render_contribution_figure, render_daily_timesheet,
+from timekeeper.database import db
+from timekeeper.models import Attendance, DailyAttendance, User
+from timekeeper.plugins.decorators import with_user
+from timekeeper.plugins.utils import create_temp_dir, safe_upload_file
+from timekeeper.plugins.views import (render_contribution_figure, render_daily_timesheet,
                     render_timesheet)
+from timekeeper.stats import working_time_ratio_series
 
 db.connect()
 db.create_tables([User, Attendance], safe=True)
