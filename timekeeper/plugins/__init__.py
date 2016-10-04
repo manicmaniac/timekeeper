@@ -28,7 +28,7 @@ from slackbot import settings
 from slackbot.bot import respond_to, listen_to
 from slackbot.utils import create_tmp_file
 
-from timekeeper.database import db
+from timekeeper.database import db, migrate_db
 from timekeeper.models import Attendance, DailyAttendance, User
 from timekeeper.plugins.decorators import with_user
 from timekeeper.plugins.utils import create_temp_dir, safe_upload_file
@@ -39,6 +39,7 @@ from timekeeper.stats import working_time_ratio_series
 db.connect()
 db.create_tables([User, Attendance], safe=True)
 DailyAttendance.create_view(safe=True)
+migrate_db()
 
 
 @listen_to('作業を開始します')
