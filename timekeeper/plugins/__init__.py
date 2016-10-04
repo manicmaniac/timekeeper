@@ -22,6 +22,7 @@ Again, I won't track you until you say `@timekeeper track me`!
 from datetime import datetime
 import re
 import os
+from textwrap import dedent
 
 import pytz
 from slackbot import settings
@@ -32,8 +33,9 @@ from timekeeper.database import db, migrate_db
 from timekeeper.models import Attendance, DailyAttendance, User
 from timekeeper.plugins.decorators import with_user
 from timekeeper.plugins.utils import create_temp_dir, safe_upload_file
-from timekeeper.plugins.views import (render_contribution_figure, render_daily_timesheet,
-                    render_timesheet)
+from timekeeper.plugins.views import (render_contribution_figure,
+                                      render_daily_timesheet,
+                                      render_timesheet)
 from timekeeper.stats import working_time_ratio_series
 
 db.connect()
@@ -57,8 +59,9 @@ def on_start_working(message, user, *args):
     attendance.save()
     message.react('stopwatch')
     if has_unfinished_work:
-        message.reply("""I think you missed to inform finishing the last one.
-                         However I'll record you start your work now.""")
+        message.reply(dedent("""\
+            I think you missed to inform finishing the last one.
+            However I'll record you start your work now."""))
 
 
 @listen_to('作業を終了します')
@@ -78,8 +81,9 @@ def on_finish_working(message, user, *args):
     attendance.save()
     message.react('stopwatch')
     if has_unstarted_work:
-        message.reply("""I think you missed to inform starting this work.
-                         However I'll record you finish your work now.""")
+        message.reply(dedent("""\
+            I think you missed to inform starting this work.
+            However I'll record you finish your work now."""))
 
 
 @respond_to('^introduce yourself$', re.IGNORECASE)
