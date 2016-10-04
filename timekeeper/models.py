@@ -18,6 +18,7 @@ class BaseModel(Model):
 
 class User(BaseModel):
     id = CharField(primary_key=True)
+    name = CharField(null=True, unique=True)
     timezone_id = CharField(null=False,
                             default=settings.TIMEKEEPER_DEFAULT_TIMEZONE)
     trackable = BooleanField(default=False)

@@ -13,5 +13,12 @@ def with_user(func):
         user, is_created = User.get_or_create(id=user_id)
         if is_created:
             user.save()
+        if user.name is None:
+            user_info = message._client.webapi.users.info(user_id)
+            if not user_info.successful:
+                raise RuntimeError(user_info.error)
+            name = user_info.body['user']['name']
+            user.name = name
+            user.save()
         return func(message, user, *args, **kwargs)
     return decorated
