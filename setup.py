@@ -9,13 +9,5 @@ setup(
     packages=['timekeeper'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[
-        'calmap==0.0.6',
-        'matplotlib==1.5.3',
-        'pandas==0.18.1',
-        'peewee==2.8.3',
-        'pytz',
-        'slackbot==0.4.1',
-        'tabulate==0.7.5',
-    ],
+    install_requires=open('requirements.txt').read(),
 )
