@@ -12,11 +12,11 @@ def is_lock_free():
     lock_id = 'timekeeper-slackbot'
     try:
         lock_socket.bind('\0' + lock_id)
-    except socket.error:
-        logging.info('Failed to acquire lock {!r}'.format(lock_id))
+    except socket.error as e:
+        logging.error('Failed to acquire lock {!r} because {}'.format(lock_id, e))
         return False
     else:
-        logging.debug('Acquired lock {!r}'.format(lock_id))
+        logging.info('Acquired lock {!r}'.format(lock_id))
         return True
 
 
