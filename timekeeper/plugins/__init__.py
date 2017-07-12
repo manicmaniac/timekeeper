@@ -129,7 +129,7 @@ def set_timezone(message, user, timezone_id):
 @respond_to('^(show )?(m[ey] )?timesheet$')
 @with_user
 def show_timesheet(message, user, *args):
-    attendances = user.attendances.order_by(Attendance.started_at)
+    attendances = user.attendances.order_by(Attendance.started_at.desc()).limit(30)
     if not attendances:
         return message.reply("Sorry but I don't have your timesheet.")
     timesheet = render_timesheet(attendances)
@@ -143,7 +143,7 @@ def show_timesheet(message, user, *args):
 @respond_to('^(show )?(m[ey] )?timesheet by day$')
 @with_user
 def show_daily_timesheet(message, user, *args):
-    daily_attendances = user.daily_attendances
+    daily_attendances = user.daily_attendances.order_by(DailyAttendance.started_at.desc()).limit(30)
     if not daily_attendances:
         return message.reply("Sorry but I don't have your daily timesheet.")
     daily_timesheet = render_daily_timesheet(daily_attendances)
