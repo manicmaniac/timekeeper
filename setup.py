@@ -4,7 +4,7 @@ setup(
     name='timekeeper',
     description='A nosy Slack bot to track your daily workload.',
     long_description=open('README.rst').read(),
-    version='0.0.3',
+    version='0.0.4',
     py_modules=['bot', 'slackbot_settings'],
     packages=find_packages(),
     include_package_data=True,
