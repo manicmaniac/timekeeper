@@ -44,15 +44,8 @@ Docker
 
 .. code:: sh
 
-    # Clone this repo and move into it
-    git clone https://github.com/ymizushima/timekeeper.git
-    cd timekeeper
-
-    # Build a container image
-    docker build -t timekeeper .
-
     # Start the built image at the first time
-    docker run -d -e SLACK_API_TOKEN='your Slack API token here' -e TIMEKEEPER_ERRORS_TO='your Slack username here' --name timekeeper timekeeper
+    docker run -d -e SLACK_API_TOKEN='your Slack API token here' -e TIMEKEEPER_ERRORS_TO='your Slack username here' --name timekeeper ymizushima/timekeeper
 
     # Just start the created container thereafter
     docker start timekeeper
