@@ -49,10 +49,13 @@ Docker
     cd timekeeper
 
     # Build a container image
-    docker build .
+    docker build -t timekeeper .
 
-    # Start the built image
-    docker run -e SLACK_API_TOKEN='your Slack API token here' -e TIMEKEEPER_ERRORS_TO='your Slack username here' --name timekeeper 'built image id here'
+    # Start the built image at the first time
+    docker run -d -e SLACK_API_TOKEN='your Slack API token here' -e TIMEKEEPER_ERRORS_TO='your Slack username here' --name timekeeper timekeeper
+
+    # Just start the created container thereafter
+    docker start timekeeper
 
 Testing
 -------
