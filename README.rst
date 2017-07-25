@@ -9,6 +9,13 @@ Usage
 
 After install and start timekeeper, say ``@timekeeper help`` on your Slack team.
 
+Dependencies
+------------
+
+- Linux (or Docker)
+- Python 3.5
+- pip
+
 Install
 -------
 
@@ -31,6 +38,21 @@ Install
 
     # Run the bot
     python timekeeper.py
+
+Docker
+------
+
+.. code:: sh
+
+    # Clone this repo and move into it
+    git clone https://github.com/ymizushima/timekeeper.git
+    cd timekeeper
+
+    # Build a container image
+    docker build .
+
+    # Start the built image
+    docker run -e SLACK_API_TOKEN='your Slack API token here' -e TIMEKEEPER_ERRORS_TO='your Slack username here' --name timekeeper 'built image id here'
 
 Testing
 -------
