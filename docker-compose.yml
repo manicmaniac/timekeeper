@@ -1,0 +1,7 @@
+version: '3'
+services:
+  bot:
+    environment:
+      - SLACK_API_TOKEN=${SLACK_API_TOKEN}
+      - TIMEKEEPER_ERRORS_TO=${TIMEKEEPER_ERRORS_TO}
+    build: .
