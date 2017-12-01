@@ -2,6 +2,7 @@ calmap
 matplotlib
 pandas
 peewee
+pymysql
 pytz
 slackbot
 tabulate
