@@ -1,29 +1,49 @@
+import errno
 import logging
+import os
 import socket
 
 from slackbot.bot import Bot
 
-lock_socket = None
+
+class LockFileExistsError(Exception):
+    pass
 
 
-def is_lock_free():
-    global lock_socket
-    lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    lock_id = 'timekeeper-slackbot'
+def create_lock_file(path):
     try:
-        lock_socket.bind('\0' + lock_id)
-    except socket.error as e:
-        logging.error('Failed to acquire lock {!r} because {}'.format(lock_id, e))
-        return False
-    else:
-        logging.info('Acquired lock {!r}'.format(lock_id))
-        return True
+        with open(path, 'x') as f:
+            pid = os.getpid()
+            f.write(str(pid) + '\n')
+    except IOError as e:
+        if e.errno == errno.EEXIST:
+            message = 'Lock file at {path} exists.'.format(path=path)
+            raise LockFileExistsError(message) from e
+        raise e
+
+
+def remove_lock_file(path):
+    with open(path, 'r') as f:
+        data = f.read().rstrip()
+    if data.isdigit():
+        saved_pid = int(data)
+        pid = os.getpid()
+        if pid == saved_pid:
+            os.unlink(path)
 
 
 def main():
-    if is_lock_free():
+    path = os.path.join(os.path.dirname(__file__), '.timekeeper.pid')
+    try:
+        create_lock_file(path)
+    except LockFileExistsError as e:
+        logging.error('Failed to acquire lock {} becuse {}'.format(path, e))
+    else:
+        logging.info('Acquired lock {}'.format(path))
         bot = Bot()
         bot.run()
+    finally:
+        remove_lock_file(path)
 
 
 if __name__ == '__main__':
