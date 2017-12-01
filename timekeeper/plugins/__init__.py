@@ -40,7 +40,7 @@ from timekeeper.stats import working_time_ratio_series
 
 db.connect()
 db.create_tables([User, Attendance], safe=True)
-DailyAttendance.create_view(safe=True)
+DailyAttendance.create_view()
 migrate_db()
 
 
