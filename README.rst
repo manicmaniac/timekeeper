@@ -42,6 +42,13 @@ Install
 Docker
 ------
 
+### with docker-compose (recommended)
+
+    SLACK_API_TOKEN='your Slack API token here' TIMEKEEPER_ERRORS_TO='your Slack username here' docker-compose up -d
+
+
+### or with docker
+
 .. code:: sh
 
     # Start the built image at the first time
