@@ -1,7 +1,22 @@
 version: '3'
 services:
   bot:
+    build: .
+    depends_on:
+      - mysql
     environment:
       - SLACK_API_TOKEN=${SLACK_API_TOKEN}
       - TIMEKEEPER_ERRORS_TO=${TIMEKEEPER_ERRORS_TO}
-    build: .
+      - TIMEKEEPER_DATABASE_URI=mysql://mysql/timekeeper
+  mysql:
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=timekeeper
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql:/var/lib/mysql
+volumes:
+  mysql:
+    driver: local
