@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from peewee import (BooleanField, CharField, CompositeKey, DateTimeField,
-                    ForeignKeyField, IntegerField, Model)
+                    ForeignKeyField, IntegerField, Model, MySQLDatabase,
+                    SqliteDatabase)
 import pytz
 from slackbot import settings
 
@@ -82,29 +83,55 @@ class DailyAttendance(Attendance):
     user = ForeignKeyField(User, null=False, related_name='daily_attendances',
                            on_delete='CASCADE')
 
+    create_view_statement_mysql = """\
+            create or replace view dailyattendance as
+            select min(started_at)
+                as started_at,
+                    max(finished_at)
+                as finished_at,
+                    count(*) - 1
+                as break_count,
+                    sum(unix_timestamp(finished_at) - unix_timestamp(started_at))
+                as working_time_seconds,
+                    min(created_at)
+                as created_at,
+                    user_id
+                from attendance
+            where started_at is not null
+                and finished_at is not null
+            group by date(started_at), user_id
+            order by started_at"""
+
+    create_view_statement_sqlite = """\
+            create view if not exists dailyattendance as
+            select min(started_at)
+                as started_at,
+                    max(finished_at)
+                as finished_at,
+                    count(*) - 1
+                as break_count,
+                    sum(cast(strftime('%s', finished_at)
+                            as integer)
+                        - cast(strftime('%s', started_at)
+                                as integer))
+                as working_time_seconds,
+                    min(created_at)
+                as created_at,
+                    user_id
+                from attendance
+            where started_at is not null
+                and finished_at is not null
+            group by date(started_at), user_id
+            order by started_at"""
+
     @classmethod
-    def create_view(cls, safe=False):
-        template = """create view {} dailyattendance as
-                           select min(started_at)
-                               as started_at,
-                                   max(finished_at)
-                               as finished_at,
-                                   count(*) - 1
-                               as break_count,
-                                   sum(cast(strftime('%s', finished_at)
-                                            as integer)
-                                       - cast(strftime('%s', started_at)
-                                              as integer))
-                               as working_time_seconds,
-                                  min(created_at)
-                               as created_at,
-                                  user_id
-                             from attendance
-                            where started_at is not null
-                              and finished_at is not null
-                         group by date(started_at), user_id
-                         order by started_at"""
-        statement = template.format('if not exists' if safe else '')
+    def create_view(cls):
+        if isinstance(cls._meta.database, MySQLDatabase):
+            statement = cls.create_view_statement_mysql
+        elif isinstance(cls._meta.database, SqliteDatabase):
+            statement = cls.create_view_statement_sqlite
+        else:
+            raise NotImplementedError('An SQL statement for the current database {} is not implemented.'.format(cls._meta.database))
         cls._meta.database.execute_sql(statement)
 
     @property
