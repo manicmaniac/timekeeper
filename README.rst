@@ -42,12 +42,14 @@ Install
 Docker
 ------
 
-### with docker-compose (recommended)
+with docker-compose (recommended)
+
+.. code:: sh
 
     SLACK_API_TOKEN='your Slack API token here' TIMEKEEPER_ERRORS_TO='your Slack username here' docker-compose up -d
 
 
-### or with docker
+or with docker
 
 .. code:: sh
 
