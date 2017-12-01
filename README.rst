@@ -37,10 +37,17 @@ Install
     export TIMEKEEPER_ERRORS_TO='your Slack username here'
 
     # Run the bot
-    python timekeeper.py
+    python bot.py
 
 Docker
 ------
+
+### with docker-compose (recommended)
+
+    SLACK_API_TOKEN='your Slack API token here' TIMEKEEPER_ERRORS_TO='your Slack username here' docker-compose up -d
+
+
+### or with docker
 
 .. code:: sh
 
