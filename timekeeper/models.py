@@ -25,6 +25,11 @@ class User(BaseModel):
     trackable = BooleanField(default=False)
 
     def last_attendance(self):
+        """
+        Returns the last attendance of the user.
+
+        :return: the last created Attendance object if it exists else None
+        """
         return self.attendances.order_by(Attendance.started_at.desc()).first()
 
     @property
