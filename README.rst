@@ -1,6 +1,9 @@
 timekeeper
 ==========
 
+.. image:: https://travis-ci.org/ymizushima/timekeeper.svg?branch=master
+    :target: https://travis-ci.org/ymizushima/timekeeper
+
 A nosy Slack bot to track your daily workload.
 Tested on Python 3.5.
 
