@@ -4,6 +4,9 @@ timekeeper
 .. image:: https://travis-ci.org/ymizushima/timekeeper.svg?branch=master
     :target: https://travis-ci.org/ymizushima/timekeeper
 
+.. image:: https://coveralls.io/repos/github/ymizushima/timekeeper/badge.svg?branch=master
+    :target: https://coveralls.io/github/ymizushima/timekeeper?branch=master
+
 A nosy Slack bot to track your daily workload.
 Tested on Python 3.5.
 
