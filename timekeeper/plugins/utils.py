@@ -30,4 +30,6 @@ def safe_upload_file(message, filename, path, comment, is_text_file=False):
 
 
 def triple_backquoted(text):
+    if '```' in text:
+        raise ValueError('Cannot quote text which contains triple backquotes.')
     return '```\n' + text + '\n```'
