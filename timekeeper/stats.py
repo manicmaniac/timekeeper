@@ -1,10 +1,11 @@
 import pandas as pd
 from peewee import MySQLDatabase, SqliteDatabase
 
-from timekeeper.database import db
+from timekeeper.database import get_db
 
 
 def working_time_ratio_series(user):
+    db = get_db()
     if isinstance(db, SqliteDatabase):
         statement = """select date(started_at) as `date`,
                             working_time_seconds

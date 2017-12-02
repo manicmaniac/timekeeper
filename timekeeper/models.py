@@ -6,13 +6,13 @@ from peewee import (BooleanField, CharField, CompositeKey, DateTimeField,
 import pytz
 from slackbot import settings
 
-from timekeeper.database import db
+from timekeeper.database import get_db
 from timekeeper.utils import format_timedelta
 
 
 class BaseModel(Model):
     class Meta:
-        database = db
+        database = get_db()
 
     created_at = DateTimeField(default=datetime.utcnow)  # read/write as UTC
 
@@ -25,6 +25,11 @@ class User(BaseModel):
     trackable = BooleanField(default=False)
 
     def last_attendance(self):
+        """
+        Returns the last attendance of the user.
+
+        :return: the last created Attendance object if it exists else None
+        """
         return self.attendances.order_by(Attendance.started_at.desc()).first()
 
     @property
