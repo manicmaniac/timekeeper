@@ -6,13 +6,13 @@ from peewee import (BooleanField, CharField, CompositeKey, DateTimeField,
 import pytz
 from slackbot import settings
 
-from timekeeper.database import db
+from timekeeper.database import get_db
 from timekeeper.utils import format_timedelta
 
 
 class BaseModel(Model):
     class Meta:
-        database = db
+        database = get_db()
 
     created_at = DateTimeField(default=datetime.utcnow)  # read/write as UTC
 
