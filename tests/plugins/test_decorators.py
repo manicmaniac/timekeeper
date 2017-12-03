@@ -23,7 +23,8 @@ class TestDecorators(unittest.TestCase):
             'body.get': lambda key: 'id' if key == 'user' else None,
             '_client.webapi.users.info': lambda user_id: mock_user_info,
         })
-        mock_user = MagicMock(name='name')
+        mock_user = MagicMock()
+        mock_user.name = 'name'
         with patch.object(User, 'get_or_create', lambda id: (mock_user, False)):
             self.assertEqual(func(message), mock_user)
 
@@ -36,6 +37,7 @@ class TestDecorators(unittest.TestCase):
             'body.get': lambda key: 'id' if key == 'user' else None,
             '_client.webapi.users.info': lambda user_id: mock_user_info,
         })
-        mock_user = MagicMock(name=None)
+        mock_user = MagicMock()
+        mock_user.name = None
         with patch.object(User, 'get_or_create', lambda id: (mock_user, True)):
             self.assertEqual(func(message), mock_user)
