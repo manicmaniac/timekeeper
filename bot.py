@@ -74,11 +74,11 @@ def run_bot_with_lock_socket():
         should_exit = False
     except LockSocketExistsError as e:
         logging.error(e)
-        should_exit = False
+        should_exit = True
     else:
         logging.info('Acquired lock.')
         run_bot()
-        should_exit = False
+        should_exit = True
     return should_exit
 
 
