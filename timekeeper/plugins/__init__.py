@@ -40,14 +40,11 @@ from timekeeper.stats import working_time_ratio_series
 
 
 def on_start_listening():
-    try:
-        db = get_db()
-        db.connect()
-        db.create_tables([User, Attendance], safe=True)
-        DailyAttendance.create_view()
-        migrate_db()
-    except Exception:
-        import pdb; pdb.set_trace()
+    db = get_db()
+    db.connect()
+    db.create_tables([User, Attendance], safe=True)
+    DailyAttendance.create_view()
+    migrate_db()
 
 
 on_start_listening()
