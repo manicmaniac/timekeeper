@@ -5,18 +5,60 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 calmap==0.0.6
-cycler==0.10.0            # via matplotlib
+    # via -r requirements.in
+certifi==2020.12.5
+    # via requests
+chardet==3.0.4
+    # via requests
+cycler==0.10.0
+    # via matplotlib
+idna==2.7
+    # via requests
 matplotlib==1.5.3
-numpy==1.11.2             # via calmap, matplotlib, pandas
+    # via
+    #   -r requirements.in
+    #   calmap
+numpy==1.11.2
+    # via
+    #   calmap
+    #   matplotlib
+    #   pandas
 pandas==0.19.0
+    # via
+    #   -r requirements.in
+    #   calmap
 peewee==2.8.5
+    # via -r requirements.in
 pymysql==0.7.11
-pyparsing==2.1.9          # via matplotlib
-python-dateutil==2.5.3    # via matplotlib, pandas
+    # via -r requirements.in
+pyparsing==2.1.9
+    # via matplotlib
+python-dateutil==2.5.3
+    # via
+    #   matplotlib
+    #   pandas
 pytz==2016.7
-requests==2.11.1          # via slackbot, slacker
-six==1.10.0               # via cycler, python-dateutil, slackbot, websocket-client
+    # via
+    #   -r requirements.in
+    #   matplotlib
+    #   pandas
+requests==2.20.0
+    # via
+    #   slackbot
+    #   slacker
+six==1.10.0
+    # via
+    #   cycler
+    #   python-dateutil
+    #   slackbot
+    #   websocket-client
 slackbot==0.4.1
-slacker==0.9.25           # via slackbot
+    # via -r requirements.in
+slacker==0.9.25
+    # via slackbot
 tabulate==0.7.5
-websocket-client==0.37.0  # via slackbot
+    # via -r requirements.in
+urllib3==1.24.3
+    # via requests
+websocket-client==0.37.0
+    # via slackbot
